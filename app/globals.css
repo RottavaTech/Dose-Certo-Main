@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #2badee;
+  --color-background-light: #f6f7f8;
+  --color-background-dark: #101c22;
+  --font-display: var(--font-lexend), sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-display);
+    color: #111827;
+    background-color: #f3f4f6;
+  }
+
+  html.dark body {
+    color: #ffffff;
+    background-color: #020617;
+  }
+}
