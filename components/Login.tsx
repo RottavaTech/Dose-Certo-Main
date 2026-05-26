@@ -38,7 +38,7 @@ export default function Login() {
       setPassValidations({
         minChar: password.length >= 8,
         upperCase: /[A-Z]/.test(password), // Verifica se tem pelo menos uma letra maiúscula
-        specialChar: /[^a-zA-Z0-9]/.test(password), // Verifica se tem caractere especial (aceita barra e outros)
+        specialChar: /[!@#$%^&*(),.?":{}|<>\/\[\]\\_+\-=\~`']/.test(password), // Verifica se tem caractere especial (aceita barra e outros)
         match: password === confirmPassword && password.length > 0
       });
     }
