@@ -40,7 +40,7 @@ export default function Home() {
           <Calculator onGoToHistory={() => setActiveTab("history")} />
         )}
         {activeTab === "history" && (
-          <History />
+          <History onGoBack={() => setActiveTab("calculator")} />
         )}
         {activeTab === "guide" && (
           <Guide />
