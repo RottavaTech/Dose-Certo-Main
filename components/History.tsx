@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Calendar as CalendarIcon, Clock, CheckCircle, Trash2, X, Plus, Pill, Bell, Syringe, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CheckCircle, Trash2, X, Plus, Pill, Syringe, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthProvider";
 
@@ -25,13 +25,6 @@ export default function History() {
   const [selectedFilterDate, setSelectedFilterDate] = useState<string | null>(null);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [calendarViewDate, setCalendarViewDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
-  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
-  const [selectedEntryForReminder, setSelectedEntryForReminder] = useState<HistoryEntry | null>(null);
-  const [reminderData, setReminderData] = useState({
-    frequencia: "diariamente",
-    hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-  });
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -63,25 +56,6 @@ export default function History() {
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
-
-  const handleSetReminder = (entry: HistoryEntry, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedEntryForReminder(entry);
-    setReminderData({
-      frequencia: "diariamente",
-      hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-    });
-    setIsReminderModalOpen(true);
-  };
-  
-  const handleSaveReminder = () => {
-    setIsReminderModalOpen(false);
-    alert(`Lembrete configurado para ${selectedEntryForReminder?.nome} às ${reminderData.hora} (${reminderData.frequencia}).`);
-    
-    if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission();
-    }
-  };
 
   const openNewEntry = () => {
     setEditingId(null);
@@ -361,13 +335,6 @@ export default function History() {
                             </div>
                             <div className="flex items-center shrink-0">
                               <button
-                                onClick={(e) => handleSetReminder(entry, e)}
-                                className="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                                title="Adicionar Alarme"
-                              >
-                                <Bell size={20} />
-                              </button>
-                              <button
                                 onClick={(e) => handleDelete(entry.id, e)}
                                 className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                                 title="Excluir"
@@ -568,64 +535,6 @@ export default function History() {
                    )
                 })}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Lembrete e painel inferior */}
-      {isReminderModalOpen && selectedEntryForReminder && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/60 dark:bg-black/60 backdrop-blur-sm sm:items-center transition-opacity">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl border-t sm:border border-gray-200 dark:border-gray-800 shadow-2xl p-6 relative animate-in slide-in-from-bottom flex flex-col">
-            <button 
-              onClick={() => setIsReminderModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white bg-gray-100 dark:bg-gray-800 p-2 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-            
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-               <Bell size={24} className="text-primary"/>
-               Agendar Lembrete
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Receba notificações locais para sua aplicação de <strong className="text-gray-900 dark:text-white">{selectedEntryForReminder.nome}</strong>.</p>
-            
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 uppercase">Frequência</label>
-                <select 
-                  value={reminderData.frequencia}
-                  onChange={e => setReminderData({...reminderData, frequencia: e.target.value})}
-                  className="w-full mt-1 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:outline-none transition-colors duration-200 shadow-sm"
-                >
-                  <option value="uma_vez">Apenas uma vez</option>
-                  <option value="diariamente">Diariamente (a cada 24h)</option>
-                  <option value="cada_12h">A cada 12 horas</option>
-                  <option value="cada_8h">A cada 8 horas</option>
-                  <option value="cada_6h">A cada 6 horas</option>
-                  <option value="semanalmente">Semanalmente</option>
-                  <option value="mensalmente">Mensalmente</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 uppercase">Horário</label>
-                <input 
-                  type="time" 
-                  value={reminderData.hora}
-                  onChange={e => setReminderData({...reminderData, hora: e.target.value})}
-                  className="w-full mt-1 p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:outline-none transition-colors duration-200 shadow-sm"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-auto">
-              <button 
-                onClick={handleSaveReminder}
-                className="flex-1 py-4 rounded-xl font-bold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm"
-              >
-                Salvar Lembrete
-              </button>
             </div>
           </div>
         </div>
