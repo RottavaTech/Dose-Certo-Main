@@ -79,7 +79,7 @@ export default function Guide() {
               </ul>
 
               <p>
-                Para evitar vazamentos ou pressão excessiva, sempre tente escolher uma seringa com capacidade um pouco maior que o volume total calculated para a sua dose.
+                Para evitar vazamentos ou pressão excessiva, sempre tente escolher uma seringa com capacidade um pouco maior que o volume total calculado para a sua dose.
               </p>
             </div>
           </details>
