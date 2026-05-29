@@ -5,10 +5,6 @@ import { Calendar as CalendarIcon, Clock, CheckCircle, Trash2, X, Plus, Pill, Be
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthProvider";
 
-interface HistoryProps {
-  onGoBack: () => void;
-}
-
 export interface HistoryEntry {
   id: string;
   created_at: string;
@@ -17,7 +13,7 @@ export interface HistoryEntry {
   user_id: string;
 }
 
-export default function History({ onGoBack }: HistoryProps) {
+export default function History() {
   const { user } = useAuth();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +41,6 @@ export default function History({ onGoBack }: HistoryProps) {
   });
 
   // Busca o histórico do Supabase
-  // Utilizamos useCallback para memorizar a função e evitar refetch desnecessário ou loops no useEffect
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     try {
@@ -53,7 +48,7 @@ export default function History({ onGoBack }: HistoryProps) {
       const { data, error } = await supabase
         .from('history')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id) // Garante que busca SOMENTE os dados do usuário autenticado
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -118,10 +113,8 @@ export default function History({ onGoBack }: HistoryProps) {
     try {
       setIsSaving(true);
       
-      // Formata a data e hora inseridas no formulário
       const dateTime = new Date(`${formData.data}T${formData.hora}:00`).toISOString();
 
-      // Se houver um editingId, fazemos um UPDATE no registro existente
       if (editingId) {
         const { error } = await supabase
           .from('history')
@@ -130,14 +123,15 @@ export default function History({ onGoBack }: HistoryProps) {
             dose_info: formData.dose,
             created_at: dateTime
           })
-          .eq('id', editingId);
+          .eq('id', editingId)
+          .eq('user_id', user.id); // Camada extra de segurança na edição
         
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('history')
           .insert([{
-            user_id: user.id,
+            user_id: user.id, // Insere atrelado ao usuário da sessão
             nome: formData.nome,
             dose_info: formData.dose,
             created_at: dateTime
@@ -165,11 +159,11 @@ export default function History({ onGoBack }: HistoryProps) {
       const { error } = await supabase
         .from('history')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user?.id); // Segurança na exclusão
 
       if (error) throw error;
       
-      // Atualiza o estado local filtrando o item deletado
       setHistory(prev => prev.filter(item => item.id !== id));
       if (editingId === id) setIsModalOpen(false);
     } catch (error) {
@@ -200,7 +194,6 @@ export default function History({ onGoBack }: HistoryProps) {
     ? history.filter((entry) => entry.created_at.startsWith(selectedFilterDate))
     : history;
 
-  // Agrupa os itens da lista pelo mês
   const groupedHistory = filteredHistory.reduce(
     (acc, entry) => {
       const month = formatMonth(entry.created_at);
@@ -213,7 +206,6 @@ export default function History({ onGoBack }: HistoryProps) {
     {} as Record<string, HistoryEntry[]>,
   );
 
-  // Calcula dias relativos para exibir na interface
   const getRelativeDateLabel = (dateString: string) => {
       const date = new Date(dateString);
       const today = new Date();
@@ -227,8 +219,6 @@ export default function History({ onGoBack }: HistoryProps) {
 
   const currentMonthCount = history.length; 
 
-  // Calcula a malha do calendário, descobre que dia da semana o mês 
-  // começa e preenche com "nulos" os dias vazios antes do dia 1
   const generateCalendarDays = (dateStr: string) => {
      const [year, month] = dateStr.split('-').map(Number);
      const date = new Date(year, month - 1, 1);
@@ -400,7 +390,6 @@ export default function History({ onGoBack }: HistoryProps) {
       {/* modal / painel inferior */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/60 dark:bg-black/60 backdrop-blur-sm sm:items-center">
-          {/* Container do Cabeçalho/Corpo do Modal */}
           <div className="bg-white dark:bg-gray-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl border-t sm:border border-gray-200 dark:border-gray-800 shadow-2xl p-6 relative animate-in slide-in-from-bottom flex flex-col max-h-[90vh]">
             <button 
               onClick={() => setIsModalOpen(false)}

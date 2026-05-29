@@ -87,7 +87,7 @@ export default function Calculator({ onGoToHistory }: { onGoToHistory: () => voi
       const { error } = await supabase
         .from('history')
         .insert([{
-          user_id: user.id,
+          user_id: user.id, // Amarrado diretamente ao usuário logado na nuvem
           nome: `Cálculo: ${dose}mg (${concentration}mg/mL)`,
           dose_info: `Seringa: ${syringeLabel} • Result: ${resultText}`,
           created_at: new Date().toISOString()
@@ -97,7 +97,7 @@ export default function Calculator({ onGoToHistory }: { onGoToHistory: () => voi
 
       setConcentration("");
       setDose("");
-      alert("Cálculo salvou no seu diário!");
+      alert("Cálculo salvo no seu diário com sucesso!");
     } catch (error) {
       console.error("Erro ao salvar registro:", error);
       alert("Erro ao salvar. Tente novamente.");
