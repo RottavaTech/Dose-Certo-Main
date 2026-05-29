@@ -7,6 +7,7 @@ import { useAuth } from './AuthProvider';
 export default function Login() {
   const { setMockUser } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isResetPassword, setIsResetPassword] = useState(false); // Novo estado para o modo de recuperação
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export default function Login() {
 
   // Valida a força da senha em tempo real usando RegEx sempre que o usuário digita algo no modo de cadastro
   useEffect(() => {
-    if (!isLogin) {
+    if (!isLogin && !isResetPassword) {
       setPassValidations({
         minChar: password.length >= 8,
         upperCase: /[A-Z]/.test(password), // Verifica se tem pelo menos uma letra maiúscula
@@ -42,14 +43,19 @@ export default function Login() {
         match: password === confirmPassword && password.length > 0
       });
     }
-  }, [password, confirmPassword, isLogin]);
+  }, [password, confirmPassword, isLogin, isResetPassword]);
 
   // Define se o formulário é válido
-  const isFormValid = isLogin 
-    ? email && password 
-    : fullName && email && birthDate && weight && profession && 
-      passValidations.minChar && passValidations.upperCase && 
-      passValidations.specialChar && passValidations.match;
+  let isFormValid = false;
+  if (isResetPassword) {
+    isFormValid = email.length > 0;
+  } else if (isLogin) {
+    isFormValid = email.length > 0 && password.length > 0;
+  } else {
+    isFormValid = fullName.length > 0 && email.length > 0 && birthDate.length > 0 && weight.length > 0 && profession.length > 0 && 
+                  passValidations.minChar && passValidations.upperCase && 
+                  passValidations.specialChar && passValidations.match;
+  }
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +67,7 @@ export default function Login() {
 
     // MOCK ADMIN BYPASS: Lógica criada para pular a autenticação real do Supabase e logar um admin de teste.
     // precisa remover ou desativar essa parte depois de autenticar com o supabase
-    if (email === 'admin@dosecerto.app' && password === 'Admin@2026!') {
+    if (email === 'admin@dosecerto.app' && password === 'Admin@2026!' && !isResetPassword) {
       setTimeout(() => {
         setMockUser({
           id: 'mock-admin-id',
@@ -79,7 +85,14 @@ export default function Login() {
     }
 
     try {
-      if (isLogin) {
+      if (isResetPassword) {
+        // Envia o e-mail de recuperação de senha pelo Supabase
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/update-password`,
+        });
+        if (resetError) throw resetError;
+        setMessage('Se esse e-mail estiver cadastrado, você receberá um link para redefinir sua senha.');
+      } else if (isLogin) {
         // logar o usuário
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -140,7 +153,7 @@ export default function Login() {
 
           <form onSubmit={handleAuth} className="space-y-4">
             
-            {!isLogin && (
+            {!isLogin && !isResetPassword && (
               <>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Nome Completo</label>
@@ -237,33 +250,50 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Senha</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="text-gray-400 dark:text-gray-500" size={18} />
+            {!isResetPassword && (
+              <div className="space-y-1">
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Senha</label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsResetPassword(true);
+                        setError(null);
+                        setMessage(null);
+                      }}
+                      className="text-[10px] font-bold text-primary hover:underline"
+                    >
+                      Esqueceu a senha?
+                    </button>
+                  )}
                 </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  maxLength={32}
-                  className="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm transition-all text-sm border-gray-200"
-                  placeholder={isLogin ? "Sua senha" : "Mínimo 8 caracteres"}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="text-gray-400 dark:text-gray-500" size={18} />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    maxLength={32}
+                    className="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm transition-all text-sm border-gray-200"
+                    placeholder={isLogin ? "Sua senha" : "Mínimo 8 caracteres"}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
-            {!isLogin && (
+            {!isLogin && !isResetPassword && (
               <>
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Confirmar Senha</label>
@@ -313,7 +343,7 @@ export default function Login() {
               disabled={loading || !isFormValid}
               className="w-full py-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mt-2 shadow-lg shadow-primary/20"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isLogin ? 'Entrar Agora' : 'Criar Conta'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isResetPassword ? 'Enviar Recuperação' : isLogin ? 'Entrar Agora' : 'Criar Conta'}
             </button>
           </form>
 
@@ -321,13 +351,18 @@ export default function Login() {
             <button
               type="button"
               onClick={() => {
-                setIsLogin(!isLogin);
+                if (isResetPassword) {
+                  setIsResetPassword(false);
+                  setIsLogin(true);
+                } else {
+                  setIsLogin(!isLogin);
+                }
                 setError(null);
                 setMessage(null);
               }}
               className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 hover:text-primary transition-colors"
             >
-              {isLogin ? 'Não tem conta? Cadastrar-se' : 'Já tem uma conta? Entrar'}
+              {isResetPassword ? 'Voltar para o Login' : isLogin ? 'Não tem conta? Cadastrar-se' : 'Já tem uma conta? Entrar'}
             </button>
           </div>
         </div>
