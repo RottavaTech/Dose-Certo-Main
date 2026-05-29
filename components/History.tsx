@@ -407,19 +407,19 @@ export default function History() {
               
               <div>
                 <div className="flex justify-between items-center ml-1">
-                   <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Medicamento</label>
-                   <span className="text-xs text-gray-500 dark:text-gray-500">{formData.nome.length}/30</span>
+                   <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Dose Aplicada (Opcional)</label>
+                   <span className="text-xs text-gray-500 dark:text-gray-500">{formData.dose.length}/70</span>
                 </div>
                 <input 
                   type="text" 
-                  maxLength={30}
-                  value={formData.nome}
-                  onChange={e => setFormData({...formData, nome: e.target.value})}
-                  className={`w-full mt-1 p-4 bg-white dark:bg-gray-900 border ${formData.nome.length >= 30 ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'} rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:outline-none transition-colors duration-200 shadow-sm`}
-                  placeholder="Ex: Dipirona, Paracetamol..."
+                  maxLength={70}
+                  value={formData.dose}
+                  onChange={e => setFormData({...formData, dose: e.target.value})}
+                  className={`w-full mt-1 p-4 bg-white dark:bg-gray-900 border ${formData.dose.length >= 70 ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'} rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:outline-none transition-colors duration-200 shadow-sm`}
+                  placeholder="Ex: 1 comp, 40 gotas..."
                 />
-                {formData.nome.length >= 30 && (
-                  <p className="text-red-500 dark:text-red-400 text-xs mt-1 ml-1">Limite máximo de 30 caracteres atingido.</p>
+                {formData.dose.length >= 70 && (
+                  <p className="text-red-500 dark:text-red-400 text-xs mt-1 ml-1">Limite máximo de 70 caracteres atingido.</p>
                 )}
               </div>
 
