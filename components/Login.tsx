@@ -65,25 +65,6 @@ export default function Login() {
     setError(null);
     setMessage(null);
 
-    // MOCK ADMIN BYPASS: Lógica criada para pular a autenticação real do Supabase e logar um admin de teste.
-    // precisa remover ou desativar essa parte depois de autenticar com o supabase
-    if (email === 'admin@dosecerto.app' && password === 'Admin@2026!' && !isResetPassword) {
-      setTimeout(() => {
-        setMockUser({
-          id: 'mock-admin-id',
-          email: 'admin@dosecerto.app',
-          user_metadata: {
-            full_name: 'Administrador DoseCerto',
-            profession: 'Arquiteto de Sistemas',
-            weight: '80',
-            birth_date: '1990-01-01'
-          }
-        } as any);
-        setLoading(false);
-      }, 1000);
-      return;
-    }
-
     try {
       if (isResetPassword) {
         // Envia o e-mail de recuperação de senha pelo Supabase
