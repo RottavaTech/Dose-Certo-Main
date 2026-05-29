@@ -125,8 +125,8 @@ export default function Login() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-y-auto">
-      <div className="w-full max-w-sm space-y-6 my-auto pt-10 pb-10">
+    <div className="w-full min-h-screen flex items-start justify-center p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 overflow-y-auto">
+      <div className="w-full max-w-sm space-y-6 pt-12 pb-12">
         <div className="text-center">
           <div className="inline-flex items-center justify-center p-4 bg-primary/10 rounded-full mb-4">
             <Syringe className="text-primary w-10 h-10" />
