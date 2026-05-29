@@ -97,19 +97,45 @@ export default function Settings() {
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('Selecione uma imagem.');
       }
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado.');
+      }
+
       const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      // Cria um nome de arquivo único usando o ID do usuário e a data atual para evitar cache no navegador
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // 1. Faz o upload da imagem para o bucket "avatars" no Supabase
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // 2. Pega a URL pública gerada pelo Supabase
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const publicUrl = data.publicUrl;
+
+      // 3. Atualiza o estado local para mostrar a imagem na hora
+      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      setEditFormData(prev => ({ ...prev, avatar_url: publicUrl }));
       
-      // Cria uma URL temporária local para preview imediato da imagem antes de fazer o upload real
-      const objectUrl = URL.createObjectURL(file);
-      setProfile(prev => ({ ...prev, avatar_url: objectUrl }));
-      
-      // Salva a referência da imagem no metadata do usuário
-      await supabase.auth.updateUser({
-        data: { avatar_url: objectUrl }
+      // 4. Salva a URL oficial no perfil do usuário no banco de dados
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
       });
 
+      if (updateError) throw updateError;
+
     } catch (error: any) {
-      alert(error.message);
+      console.error("Erro no upload:", error);
+      alert(error.message || "Erro ao enviar a imagem.");
     } finally {
       setUploading(false);
     }
@@ -143,7 +169,7 @@ export default function Settings() {
             <div className="relative group mb-4">
               <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 border-4 border-white dark:border-gray-800 shadow-md flex items-center justify-center relative transition-colors duration-200">
                 {profile.avatar_url ? (
-                  <Image src={profile.avatar_url} alt="Avatar" fill referrerPolicy="no-referrer" className="object-cover" />
+                  <Image src={profile.avatar_url} alt="Avatar" fill referrerPolicy="no-referrer" className="object-cover" unoptimized />
                 ) : (
                   <UserIcon size={48} className="text-gray-300 dark:text-gray-400" />
                 )}
