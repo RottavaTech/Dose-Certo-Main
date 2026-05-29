@@ -237,7 +237,7 @@ export default function Settings() {
             </summary>
             <div className="px-4 pb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
-                O DoseCerto é uma ferramenta de auxílio matemático. Nunca altere suas doses sem a supervisão expressa do seu médico.
+                O DoseCerto é uma ferramenta de auxílio estritamente matemático para conversão e organização de dosagens. O aplicativo não emite diagnósticos, receitas ou recomendações clínicas. Nunca altere suas doses ou cronogramas sem a orientação e supervisão expressa do seu médico.
               </p>
             </div>
           </details>
@@ -255,7 +255,7 @@ export default function Settings() {
             </summary>
             <div className="px-4 pb-4">
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
-                Seus dados são criptografados e não são compartilhados com redes de anúncios ou outros usuários.
+                Em total conformidade com a LGPD, suas informações são tratadas de forma estritamente confidencial. Seus dados de saúde são protegidos por criptografia avançada através da infraestrutura de nuvem segura do Supabase, garantindo que nunca sejam compartilhados com redes de anúncios, terceiros ou outros usuários.
               </p>
             </div>
           </details>

@@ -346,6 +346,11 @@ export default function Login() {
               {isResetPassword ? 'Voltar para o Login' : isLogin ? 'Não tem conta? Cadastrar-se' : 'Já tem uma conta? Entrar'}
             </button>
           </div>
+          <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700/50 text-center">
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium leading-relaxed">
+              🔒 Conexão segura. Seus dados estão protegidos por criptografia de ponta a ponta e em conformidade com a LGPD.
+            </p>
+          </div>
         </div>
       </div>
     </div>
